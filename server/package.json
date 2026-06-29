@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "check": "node --check index.js && node --check app.js && node --check schema.js",
+    "test": "node --test test/validation.test.js",
+    "test:smoke": "node test-complete.js"
   },
   "dependencies": {
     "apollo-server-express": "^3.13.0",

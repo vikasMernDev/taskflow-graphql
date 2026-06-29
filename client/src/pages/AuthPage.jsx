@@ -9,24 +9,21 @@ import TextInput from "../components/TextInput";
 export default function AuthPage({ mode }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
-  const [statusMessage, setStatusMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const [loginMutation] = useMutation(LOGIN, { refetchQueries: [{ query: GET_ME }], awaitRefetchQueries: true });
-  const [registerMutation] = useMutation(REGISTER, { refetchQueries: [{ query: GET_ME }], awaitRefetchQueries: true });
+  const [loginMutation, { loading: loginLoading }] = useMutation(LOGIN, { refetchQueries: [{ query: GET_ME }], awaitRefetchQueries: true });
+  const [registerMutation, { loading: registerLoading }] = useMutation(REGISTER, { refetchQueries: [{ query: GET_ME }], awaitRefetchQueries: true });
+  const submitting = loginLoading || registerLoading;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setErrorMessage("");
-    setStatusMessage("");
 
     try {
       if (mode === "login") {
         await loginMutation({ variables: { email: form.email, password: form.password } });
-        setStatusMessage("Logged in successfully.");
       } else {
         await registerMutation({ variables: { email: form.email, password: form.password } });
-        setStatusMessage("Account created successfully.");
       }
       navigate("/tasks");
     } catch (error) {
@@ -36,17 +33,18 @@ export default function AuthPage({ mode }) {
 
   return (
     <div className="page auth-page">
-      <Card className="auth-card" title={mode === "login" ? "Welcome back" : "Create an account"} subtitle={mode === "login" ? "Login to manage your tasks." : "Register to start tracking tasks."}>
-        {errorMessage && <div className="alert error">{errorMessage}</div>}
-        {statusMessage && <div className="alert success">{statusMessage}</div>}
-        <form onSubmit={handleSubmit} className="form-grid">
+      <Card className="auth-card" headingLevel="h1" title={mode === "login" ? "Welcome back" : "Create an account"} subtitle={mode === "login" ? "Login to manage your tasks." : "Register to start tracking tasks."}>
+        {errorMessage && <div className="alert error" role="alert">{errorMessage}</div>}
+        <form onSubmit={handleSubmit} className="form-grid" aria-busy={submitting}>
           <TextInput label="Email">
-            <input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            <input type="email" autoComplete="email" maxLength={254} required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
           </TextInput>
           <TextInput label="Password">
-            <input type="password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+            <input type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} minLength={8} required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
           </TextInput>
-          <Button type="submit" variant="primary">{mode === "login" ? "Login" : "Register"}</Button>
+          <Button type="submit" variant="primary" disabled={submitting}>
+            {submitting ? "Please wait..." : mode === "login" ? "Login" : "Register"}
+          </Button>
         </form>
         <div className="form-footer">
           {mode === "login" ? (

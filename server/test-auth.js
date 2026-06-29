@@ -1,9 +1,10 @@
 async function run() {
-  const url = 'http://localhost:4000/graphql';
+  const url = process.env.GRAPHQL_URL || 'http://localhost:4000/graphql';
+  const email = `test-${Date.now()}@example.com`;
 
   const registerQuery = {
     query: `mutation Register($email: String!, $password: String!) { register(email: $email, password: $password) { id email } }`,
-    variables: { email: 'test@example.com', password: 'password123' }
+    variables: { email, password: 'password123' }
   };
 
   const tasksQuery = {
@@ -25,6 +26,7 @@ async function run() {
 
     if (!setCookie) {
       console.log('No cookie set. Login response may not be sending cookies.');
+      process.exitCode = 1;
       return;
     }
 
@@ -41,6 +43,7 @@ async function run() {
     console.log('tasks response:', tasksData);
   } catch (err) {
     console.error(err);
+    process.exitCode = 1;
   }
 }
 

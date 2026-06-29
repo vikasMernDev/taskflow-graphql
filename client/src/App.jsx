@@ -21,7 +21,7 @@ export default function App() {
         path="/tasks"
         element={
           <ProtectedRoute user={user}>
-            <TasksPage />
+            <TasksPage user={user} />
           </ProtectedRoute>
         }
       />
